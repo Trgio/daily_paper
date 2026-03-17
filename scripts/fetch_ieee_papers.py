@@ -204,12 +204,20 @@ def call_minimax_api(title: str, abstract: str, author_info: str = "") -> dict:
         content_clean = re.sub(r'```json\s*', '', content)
         content_clean = re.sub(r'```\s*$', '', content_clean)
 
-        # 提取JSON
-        json_match = re.search(r'\{[^}]+\}', content_clean, re.DOTALL)
+        # 使用正则提取第一个 { 到最后一个 } 之间的内容
+        json_match = re.search(r'\{.+\}', content_clean, re.DOTALL)
         if json_match:
-            return json.loads(json_match.group())
-        else:
-            return json.loads(content_clean)
+            try:
+                return json.loads(json_match.group())
+            except json.JSONDecodeError:
+                # 如果正则提取的仍然解析失败，尝试更严格的匹配
+                json_match_strict = re.search(r'\{"score":\s*\d+,\s*"summary":\s*".*"\}', content_clean)
+                if json_match_strict:
+                    return json.loads(json_match_strict.group())
+
+        # 最终降级方案：返回默认评分
+        print("警告: 无法解析API返回的JSON，使用默认评分")
+        return {"score": 50, "summary": "JSON解析失败，使用默认评分"}
 
     except requests.exceptions.Timeout:
         print("错误: API请求超时")
@@ -249,49 +257,62 @@ def score_papers(papers: list) -> list:
 
 # ============== 主流程 ==============
 def main():
+    import traceback
+
     print("=" * 50)
     print("IEEE/论文抓取与筛选系统")
     print("=" * 50)
 
-    # 1. 抓取论文
-    print(f"\n[1/3] 正在从Semantic Scholar抓取论文: {SEARCH_QUERY}")
-    papers = fetch_ieee_papers(SEARCH_QUERY, MAX_PAPERS)
-    print(f"成功抓取 {len(papers)} 篇论文")
+    try:
+        # 1. 抓取论文
+        print(f"\n[1/3] 正在从Semantic Scholar抓取论文: {SEARCH_QUERY}")
+        papers = fetch_ieee_papers(SEARCH_QUERY, MAX_PAPERS)
+        print(f"成功抓取 {len(papers)} 篇论文")
 
-    if len(papers) == 0:
-        print("\n警告: 没有抓取到论文，请检查API或搜索条件")
+        if len(papers) == 0:
+            print("\n警告: 没有抓取到论文，请检查API或搜索条件")
+            return
+
+        # 2. AI评分
+        print(f"\n[2/3] 正在使用MiniMax API进行AI评分...")
+        scored_papers = score_papers(papers)
+
+        # 3. 排序并筛选Top N
+        scored_papers.sort(key=lambda x: x["ai_score"], reverse=True)
+        top_papers = scored_papers[:TOP_N]
+
+        # 4. 写入JSON文件
+        print(f"\n[3/3] 正在写入 Top {TOP_N} 到 {OUTPUT_FILE}")
+
+        # 检查是否有数据
+        if not top_papers:
+            print("警告: 没有获取到任何数据")
+            return
+
+        output_papers = []
+        for paper in top_papers:
+            output_papers.append({
+                "id": paper["id"],
+                "title": paper["title"],
+                "authors": paper["authors"],
+                "abstract": paper["abstract"],
+                "ai_summary": paper["ai_summary"],
+                "url": paper["url"],
+                "published_date": paper["published_date"]
+            })
+
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            json.dump(output_papers, f, ensure_ascii=False, indent=2)
+
+        print(f"\n完成！已将 Top {TOP_N} 论文写入 {OUTPUT_FILE}")
+        print("\n评分结果：")
+        for i, paper in enumerate(top_papers, 1):
+            print(f"  {i}. [{paper['ai_score']}分] {paper['title'][:60]}...")
+
+    except Exception as e:
+        print(f"\n脚本运行失败: {e}")
+        traceback.print_exc()
         return
-
-    # 2. AI评分
-    print(f"\n[2/3] 正在使用MiniMax API进行AI评分...")
-    scored_papers = score_papers(papers)
-
-    # 3. 排序并筛选Top N
-    scored_papers.sort(key=lambda x: x["ai_score"], reverse=True)
-    top_papers = scored_papers[:TOP_N]
-
-    # 4. 写入JSON文件
-    print(f"\n[3/3] 正在写入 Top {TOP_N} 到 {OUTPUT_FILE}")
-
-    output_papers = []
-    for paper in top_papers:
-        output_papers.append({
-            "id": paper["id"],
-            "title": paper["title"],
-            "authors": paper["authors"],
-            "abstract": paper["abstract"],
-            "ai_summary": paper["ai_summary"],
-            "url": paper["url"],
-            "published_date": paper["published_date"]
-        })
-
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(output_papers, f, ensure_ascii=False, indent=2)
-
-    print(f"\n完成！已将 Top {TOP_N} 论文写入 {OUTPUT_FILE}")
-    print("\n评分结果：")
-    for i, paper in enumerate(top_papers, 1):
-        print(f"  {i}. [{paper['ai_score']}分] {paper['title'][:60]}...")
 
 
 if __name__ == "__main__":
