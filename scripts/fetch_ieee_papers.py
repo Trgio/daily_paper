@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 # ============== 配置 ==============
 # Semantic Scholar API 搜索主题
-SEARCH_QUERY = "neural network control"
+SEARCH_QUERY = "power electronics neural network control"
 MAX_PAPERS = 40          # 抓取论文数量（减少以降低API压力）
 TOP_N = 20               # 筛选Top N
 OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "ieee_papers.json")
