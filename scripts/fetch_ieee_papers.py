@@ -2,17 +2,20 @@
 """
 IEEE/论文抓取与筛选脚本
 功能：从Semantic Scholar抓取近1个月的论文，使用MiniMax API进行AI评分，筛选Top 20写入JSON
+支持备用ArXiv数据源
 """
 
 import os
 import json
+import time
 import requests
-from datetime import datetime, timedelta
+import arxiv
+from datetime import datetime, timedelta, timezone
 
 # ============== 配置 ==============
 # Semantic Scholar API 搜索主题
 SEARCH_QUERY = "neural network control"
-MAX_PAPERS = 60          # 抓取论文数量
+MAX_PAPERS = 40          # 抓取论文数量（减少以降低API压力）
 TOP_N = 20               # 筛选Top N
 OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "ieee_papers.json")
 
@@ -24,6 +27,9 @@ MODEL_NAME = "abab6.5s-chat"
 # Semantic Scholar API
 SEMANTIC_SCHOLAR_API = "https://api.semanticscholar.org/graph/v1/paper/search"
 
+# 浏览器User-Agent
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
 
 # ============== 时间工具 ==============
 def get_date_range() -> tuple:
@@ -33,8 +39,43 @@ def get_date_range() -> tuple:
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
 
 
-# ============== Semantic Scholar 抓取 ==============
-def fetch_ieee_papers(query: str, max_results: int = 60) -> list:
+def get_date_range_utc() -> tuple:
+    """获取过去1个月的UTC日期范围"""
+    utc_now = datetime.now(timezone.utc)
+    start_date = utc_now - timedelta(days=30)
+    return start_date, utc_now
+
+
+# ============== Semantic Scholar 抓取（带重试）==============
+def fetch_with_retry(url: str, headers: dict, params: dict, max_retries: int = 3) -> dict:
+    """带重试机制的请求"""
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=30)
+
+            if response.status_code == 429:
+                wait_time = 10 * (attempt + 1)  # 递增等待时间
+                print(f"遇到429错误，第 {attempt + 1} 次重试，等待 {wait_time} 秒...")
+                time.sleep(wait_time)
+                continue
+
+            response.raise_for_status()
+            return response.json()
+
+        except requests.exceptions.Timeout:
+            print(f"请求超时，第 {attempt + 1} 次重试...")
+            time.sleep(5)
+        except requests.exceptions.RequestException as e:
+            print(f"请求错误: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(5)
+            else:
+                raise
+
+    return {}
+
+
+def fetch_semantic_scholar_papers(query: str, max_results: int = 40) -> list:
     """从Semantic Scholar抓取近1个月的论文"""
     start_date, end_date = get_date_range()
     date_range = f"{start_date}:{end_date}"
@@ -42,13 +83,14 @@ def fetch_ieee_papers(query: str, max_results: int = 60) -> list:
     print(f"抓取范围: {start_date} ~ {end_date}")
 
     headers = {
-        "Accept": "application/json"
+        "Accept": "application/json",
+        "User-Agent": USER_AGENT
     }
 
     params = {
         "query": query,
         "fields": "title,authors,abstract,url,year,publicationDate,externalIds",
-        "limit": min(max_results, 100),  # API 最大支持 100
+        "limit": min(max_results, 100),
         "publicationDateOrYear": date_range,
         "sort": "relevance"
     }
@@ -56,50 +98,43 @@ def fetch_ieee_papers(query: str, max_results: int = 60) -> list:
     papers = []
     offset = 0
     batch_size = min(max_results, 100)
+    max_retries = 3
 
     while len(papers) < max_results:
         params["offset"] = offset
         params["limit"] = min(batch_size, max_results - len(papers))
 
         try:
-            response = requests.get(
-                SEMANTIC_SCHOLAR_API,
-                headers=headers,
-                params=params,
-                timeout=30
-            )
-            response.raise_for_status()
-            result = response.json()
+            result = fetch_with_retry(SEMANTIC_SCHOLAR_API, headers, params, max_retries)
+
+            if not result:
+                print("Semantic Scholar 请求失败，已达最大重试次数")
+                break
 
             data = result.get("data", [])
             if not data:
                 break
 
             for item in data:
-                # 解析发表日期
                 pub_date = item.get("publicationDate", "")
                 if not pub_date:
                     year = item.get("year", "")
                     pub_date = f"{year}-01-01" if year else ""
 
-                # 获取论文ID
                 paper_id = item.get("paperId", "")
                 external_ids = item.get("externalIds", {})
                 arxiv_id = external_ids.get("ArXiv", "")
                 doi = external_ids.get("DOI", "")
 
-                # 构建URL
                 url = item.get("url", "")
                 if not url and doi:
                     url = f"https://doi.org/{doi}"
                 elif not url and arxiv_id:
                     url = f"https://arxiv.org/abs/{arxiv_id}"
 
-                # 获取作者和机构信息
                 authors_list = item.get("authors", [])
                 authors = ", ".join([a.get("name", "") for a in authors_list[:5]])
 
-                # 尝试获取第一作者机构（如果API支持）
                 author_info = ""
                 if authors_list:
                     first_author = authors_list[0]
@@ -120,15 +155,67 @@ def fetch_ieee_papers(query: str, max_results: int = 60) -> list:
             if len(data) < batch_size:
                 break
 
-        except requests.exceptions.Timeout:
-            print("警告: API请求超时")
+            # 避免请求过快
+            time.sleep(1)
+
+        except Exception as e:
+            print(f"抓取失败: {e}")
             break
-        except requests.exceptions.RequestException as e:
-            print(f"警告: API请求失败 - {e}")
-            break
-        except json.JSONDecodeError:
-            print("警告: 响应JSON解析失败")
-            break
+
+    return papers
+
+
+# ============== ArXiv 备用抓取 ==============
+def fetch_arxiv_papers_fallback(query: str, max_results: int = 40) -> list:
+    """从ArXiv抓取近1个月的论文（备用数据源）"""
+    print("正在切换到 ArXiv 备用数据源...")
+
+    start_date, end_date = get_date_range_utc()
+    print(f"ArXiv 抓取范围: {start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')} (UTC)")
+
+    client = arxiv.Client()
+
+    search = arxiv.Search(
+        query=query,
+        max_results=max_results,
+        sort_by=arxiv.SortCriterion.SubmittedDate,
+        sort_order=arxiv.SortOrder.Descending
+    )
+
+    papers = []
+    for result in client.results(search):
+        published_utc = result.published.replace(tzinfo=timezone.utc) if result.published.tzinfo is None else result.published
+
+        # 过滤：只保留近1个月发布的论文
+        if not (start_date <= published_utc <= end_date):
+            continue
+
+        paper = {
+            "id": result.entry_id.split("/")[-1],
+            "title": result.title,
+            "authors": ", ".join([author.name for author in result.authors]),
+            "author_info": "",
+            "abstract": result.summary.replace("\n", " ") or "暂无摘要",
+            "url": result.entry_id,
+            "published_date": published_utc.strftime("%Y-%m-%d")
+        }
+        papers.append(paper)
+
+    return papers
+
+
+# ============== 主抓取函数 ==============
+def fetch_ieee_papers(query: str, max_results: int = 40) -> list:
+    """抓取论文，优先Semantic Scholar，失败则使用ArXiv"""
+    print("\n=== 尝试从 Semantic Scholar 抓取 ===")
+    papers = fetch_semantic_scholar_papers(query, max_results)
+
+    if len(papers) == 0:
+        print("\n=== Semantic Scholar 无数据，切换到 ArXiv ===")
+        papers = fetch_arxiv_papers_fallback(query, max_results)
+        print(f"从 ArXiv 成功抓取 {len(papers)} 篇论文")
+    else:
+        print(f"从 Semantic Scholar 成功抓取 {len(papers)} 篇论文")
 
     return papers
 
@@ -147,7 +234,6 @@ def call_minimax_api(title: str, abstract: str, author_info: str = "") -> dict:
         "Content-Type": "application/json"
     }
 
-    # 包含作者信息的提示词
     author_context = f"\n作者/机构信息: {author_info}" if author_info else ""
 
     prompt = f"""你是一个AI学术论文评审专家。请根据以下论文的标题、摘要和作者信息，评估其学术创新性。
@@ -200,25 +286,20 @@ def call_minimax_api(title: str, abstract: str, author_info: str = "") -> dict:
             print("警告: API返回内容为空")
             return {"score": 50, "summary": "API返回内容为空"}
 
-        # 移除可能的markdown代码块
         content_clean = re.sub(r'```json\s*', '', content)
         content_clean = re.sub(r'```\s*$', '', content_clean)
 
-        # 使用正则提取第一个 { 到最后一个 } 之间的内容
         json_match = re.search(r'\{.+\}', content_clean, re.DOTALL)
         if json_match:
             try:
                 parsed = json.loads(json_match.group())
-                # 确保 score 转换为数值类型
                 try:
                     score = float(parsed.get("score", 50))
                 except (ValueError, TypeError):
                     score = 0.0
-                # 确保 summary 有默认值
                 summary = parsed.get("summary") or "无总结"
                 return {"score": score, "summary": summary}
             except json.JSONDecodeError:
-                # 如果正则提取的仍然解析失败，尝试更严格的匹配
                 json_match_strict = re.search(r'\{"score":\s*\d+,\s*"summary":\s*".*"\}', content_clean)
                 if json_match_strict:
                     parsed = json.loads(json_match_strict.group())
@@ -229,7 +310,6 @@ def call_minimax_api(title: str, abstract: str, author_info: str = "") -> dict:
                     summary = parsed.get("summary") or "无总结"
                     return {"score": score, "summary": summary}
 
-        # 最终降级方案：返回默认评分
         print("警告: 无法解析API返回的JSON，使用默认评分")
         return {"score": 0.0, "summary": "无总结"}
 
@@ -281,7 +361,7 @@ def main():
 
     try:
         # 1. 抓取论文
-        print(f"\n[1/3] 正在从Semantic Scholar抓取论文: {SEARCH_QUERY}")
+        print(f"\n[1/3] 正在抓取论文: {SEARCH_QUERY}")
         papers = fetch_ieee_papers(SEARCH_QUERY, MAX_PAPERS)
         print(f"成功抓取 {len(papers)} 篇论文")
 
@@ -300,7 +380,6 @@ def main():
         # 4. 写入JSON文件
         print(f"\n[3/3] 正在写入 Top {TOP_N} 到 {OUTPUT_FILE}")
 
-        # 检查是否有数据
         if not top_papers:
             print("警告: 没有获取到任何数据")
             return
