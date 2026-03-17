@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 # ============== 配置 ==============
 # Semantic Scholar API 搜索主题
 SEARCH_QUERY = "power electronics neural network control"
-MAX_PAPERS = 40          # 抓取论文数量（减少以降低API压力）
+MAX_PAPERS = 60          # 抓取论文数量
 TOP_N = 20               # 筛选Top N
 OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "ieee_papers.json")
 
@@ -221,6 +221,20 @@ def fetch_ieee_xplore_papers(query: str, max_results: int = 40) -> list:
 
             for record in records:
                 try:
+                    # 过滤：只保留期刊论文（Journal Articles），排除会议论文
+                    content_type = record.get("contentType", "")
+                    # 常见期刊类型: "Journals", "IEEE Journals", "Magazines"
+                    # 会议类型: "Conferences", "Conference Proceedings"
+                    if content_type and "Journal" not in content_type and "Magazine" not in content_type:
+                        # 尝试从其他字段判断
+                        is_journal = False
+                        for key in record:
+                            if isinstance(record.get(key), str) and "journal" in record.get(key, "").lower():
+                                is_journal = True
+                                break
+                        if not is_journal:
+                            continue
+
                     # 提取论文信息
                     title = record.get("articleTitle", "")
                     if not title:
@@ -366,19 +380,19 @@ def call_minimax_api(title: str, abstract: str, author_info: str = "") -> dict:
 
     author_context = f"\n作者/机构信息: {author_info}" if author_info else ""
 
-    prompt = f"""你是一个AI学术论文评审专家。请根据以下论文的标题、摘要和作者信息，评估其学术创新性。
+    prompt = f"""你是一个严格的AI学术论文评审专家。请根据以下论文的标题和摘要，评估其学术创新性并给出差异化评分。
 
 论文标题：{title}
-论文摘要：{abstract}{author_context}
+论文摘要：{abstract}
 
-评分标准：
-1. 创新性（40分）：研究问题、方法的独特性和突破程度
-2. 技术水平（30分）：理论深度、技术实现的先进性
-3. 应用价值（20分）：实际应用前景和影响力
-4. 可复现性（10分）：描述清晰度
+评分要求：
+- 评分范围0-100分，平均分约50-70分
+- 只有真正突破性的论文才能得85分以上
+- 平庸或常规论文应在40-60分之间
+- 不要给所有论文都打高分，必须有差异化
 
-请严格按照以下JSON格式输出，不要包含任何markdown代码块标记：
-{{"score": <0-100的整数>, "summary": <一句话中文精炼总结>}}
+输出格式（必须是有效的JSON）：
+{{"score": <整数>, "summary": "<一句话中文总结>"}}
 """
 
     payload = {
@@ -423,25 +437,24 @@ def call_minimax_api(title: str, abstract: str, author_info: str = "") -> dict:
         if json_match:
             try:
                 parsed = json.loads(json_match.group())
-                try:
-                    score = float(parsed.get("score", 50))
-                except (ValueError, TypeError):
-                    score = 0.0
+                # 提取score，确保是数值
+                score_val = parsed.get("score")
+                if score_val is not None:
+                    score = float(score_val)
+                else:
+                    # 尝试从其他可能的字段提取
+                    score = 50.0
+
                 summary = parsed.get("summary") or "无总结"
+
+                # 调试：打印API返回内容
+                print(f"  API返回: score={score}, summary={summary[:20]}...")
                 return {"score": score, "summary": summary}
-            except json.JSONDecodeError:
-                json_match_strict = re.search(r'\{"score":\s*\d+,\s*"summary":\s*".*"\}', content_clean)
-                if json_match_strict:
-                    parsed = json.loads(json_match_strict.group())
-                    try:
-                        score = float(parsed.get("score", 50))
-                    except (ValueError, TypeError):
-                        score = 0.0
-                    summary = parsed.get("summary") or "无总结"
-                    return {"score": score, "summary": summary}
+            except (json.JSONDecodeError, ValueError, TypeError) as e:
+                print(f"JSON解析错误: {e}, 内容: {content_clean[:100]}...")
 
         print("警告: 无法解析API返回的JSON，使用默认评分")
-        return {"score": 0.0, "summary": "无总结"}
+        return {"score": 50.0, "summary": "解析失败"}
 
     except requests.exceptions.Timeout:
         print("错误: API请求超时")
@@ -473,8 +486,17 @@ def score_papers(papers: list) -> list:
             paper.get("author_info", "")
         )
 
-        paper["ai_score"] = ai_result.get("score", 50)
+        # 确保score是数值类型
+        score_val = ai_result.get("score", 50)
+        try:
+            paper["ai_score"] = float(score_val)
+        except (ValueError, TypeError):
+            paper["ai_score"] = 50.0
+
         paper["ai_summary"] = ai_result.get("summary", "暂无总结")
+
+        # 打印实际得分，便于调试
+        print(f"  -> 得分: {paper['ai_score']}, 总结: {paper['ai_summary'][:30]}...")
 
         scored_papers.append(paper)
 
