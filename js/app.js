@@ -55,22 +55,25 @@ function renderPapers(papers) {
 
 // 创建单个论文卡片
 function createPaperCard(paper) {
-    // 构建期刊和作者单位信息
-    let metaInfo = '';
-
-    // 添加期刊名称（如果有）
+    // 期刊名称（如果有）
+    let journalHtml = '';
     if (paper.publication_title) {
-        metaInfo += `<p class="text-purple-600 text-sm mb-1"><strong>期刊:</strong> ${paper.publication_title}</p>`;
+        journalHtml = `<p class="text-purple-600 text-sm mb-2"><strong>期刊:</strong> ${paper.publication_title}</p>`;
     }
 
-    // 添加作者
-    if (paper.authors) {
-        metaInfo += `<p class="text-gray-600 text-sm mb-1"><strong>作者:</strong> ${paper.authors}</p>`;
-    }
-
-    // 添加作者单位（如果有）
-    if (paper.author_info) {
-        metaInfo += `<p class="text-gray-500 text-sm mb-3"><strong>单位:</strong> ${paper.author_info}</p>`;
+    // 作者和单位 - 点击展开
+    let authorsSection = '';
+    if (paper.authors || paper.author_info) {
+        const authors = paper.authors || '未知作者';
+        const affiliation = paper.author_info || '未知单位';
+        authorsSection = `
+            <div class="mb-3">
+                <p class="text-gray-600 text-sm cursor-pointer hover:text-blue-600" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                    <strong>作者:</strong> ${authors} <span class="text-blue-500 text-xs">[点击展开/收起]</span>
+                </p>
+                <p class="text-gray-500 text-sm hidden mt-1 pl-2 border-l-2 border-gray-300"><strong>单位:</strong> ${affiliation}</p>
+            </div>
+        `;
     }
 
     return `
@@ -80,7 +83,8 @@ function createPaperCard(paper) {
                     ${paper.title}
                 </a>
             </h2>
-            ${metaInfo}
+            ${journalHtml}
+            ${authorsSection}
             <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
                 <p class="text-gray-700 font-medium">${paper.ai_summary}</p>
             </div>
