@@ -7,6 +7,8 @@ on:
 jobs:
   update-ieee-papers:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout code
@@ -31,6 +33,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: 更新IEEE论文数据"
-          commit_author_name: github-actions[bot]
-          commit_author_email: github-actions[bot]@users.noreply.github.com
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
           file_pattern: "data/ieee_papers.json"
