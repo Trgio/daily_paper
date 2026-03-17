@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-论文抓取与AI筛选脚本
-功能：从ArXiv抓取论文，使用MiniMax API进行AI评分，筛选Top 5写入JSON
+AI论文抓取与筛选脚本
+功能：从ArXiv抓取昨天发布的论文，使用MiniMax API进行AI评分，筛选Top 5写入JSON
 """
 
 import os
 import json
 import requests
 import arxiv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # ============== 配置 ==============
-SEARCH_QUERY = "data-driven lithium-ion battery SOH prediction"  # 搜索主题
-MAX_PAPERS = 20          # 抓取论文数量
+SEARCH_QUERY = "artificial intelligence OR machine learning OR deep learning"  # 搜索主题
+MAX_PAPERS = 50          # 抓取论文数量（过滤后可能不足）
 TOP_N = 5                # 筛选Top N
-OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "papers.json")
+OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "ai_papers.json")
 
 # MiniMax API 配置（仅需 API Key）
 MINIMAX_API_KEY = os.getenv("MINIMAX_API_KEY")
@@ -24,9 +24,23 @@ MODEL_NAME = "abab6.5s-chat"  # 性价比高，支持工具调用
 
 
 # ============== ArXiv 抓取 ==============
-def fetch_arxiv_papers(query: str, max_results: int = 20) -> list:
-    """从ArXiv抓取论文"""
+def get_yesterday_date_utc() -> tuple:
+    """获取昨天的UTC日期范围"""
+    utc_now = datetime.now(timezone.utc)
+    yesterday = utc_now - timedelta(days=1)
+    yesterday_start = yesterday.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_end = yesterday.replace(hour=23, minute=59, second=59, microsecond=999999)
+    return yesterday_start, yesterday_end
+
+
+def fetch_arxiv_papers(query: str, max_results: int = 50) -> list:
+    """从ArXiv抓取昨天发布的论文"""
     client = arxiv.Client()
+
+    # 获取昨天的UTC日期范围
+    yesterday_start, yesterday_end = get_yesterday_date_utc()
+
+    print(f"抓取范围: {yesterday_start.strftime('%Y-%m-%d')} ~ {yesterday_end.strftime('%Y-%m-%d')} (UTC)")
 
     search = arxiv.Search(
         query=query,
@@ -37,8 +51,13 @@ def fetch_arxiv_papers(query: str, max_results: int = 20) -> list:
 
     papers = []
     for result in client.results(search):
-        # 获取发表日期
-        published_date = result.published.strftime("%Y-%m-%d")
+        # 获取发表日期（转换为UTC）
+        published_utc = result.published.replace(tzinfo=timezone.utc) if result.published.tzinfo is None else result.published
+        published_date = published_utc.strftime("%Y-%m-%d")
+
+        # 过滤：只保留昨天发布的论文
+        if not (yesterday_start <= published_utc <= yesterday_end):
+            continue
 
         paper = {
             "id": result.entry_id.split("/")[-1],
@@ -157,13 +176,17 @@ def score_papers(papers: list) -> list:
 # ============== 主流程 ==============
 def main():
     print("=" * 50)
-    print("论文抓取与AI筛选系统")
+    print("AI论文抓取与筛选系统")
     print("=" * 50)
 
-    # 1. 抓取ArXiv论文
-    print(f"\n[1/3] 正在从ArXiv抓取论文: {SEARCH_QUERY}")
+    # 1. 抓取ArXiv论文（昨天发布的）
+    print(f"\n[1/3] 正在从ArXiv抓取昨天发布的论文: {SEARCH_QUERY}")
     papers = fetch_arxiv_papers(SEARCH_QUERY, MAX_PAPERS)
-    print(f"成功抓取 {len(papers)} 篇论文")
+    print(f"成功抓取 {len(papers)} 篇昨天发布的论文")
+
+    if len(papers) == 0:
+        print("\n警告: 昨天没有新发布的论文，跳过处理")
+        return
 
     # 2. AI评分
     print(f"\n[2/3] 正在使用MiniMax API进行AI评分...")

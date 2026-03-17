@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日论文推送</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- 页头 -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">每日论文推送</h1>
+            <p class="text-gray-500" id="update-date"></p>
+        </header>
+
+        <!-- 手动更新按钮 -->
+        <div class="text-center mb-8">
+            <a href="https://github.com/Trgio/daily_paper/actions/workflows/manual_ieee_update.yml"
+               target="_blank"
+               class="inline-flex items-center px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg shadow-lg hover:bg-gray-700 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                手动拉取最新1个月论文
+            </a>
+            <p class="text-xs text-gray-400 mt-2">点击将跳转至 GitHub 控制台，请点击右侧的 'Run workflow' 开始更新（约需2-3分钟处理）</p>
+        </div>
+
+        <!-- 返回导航 -->
+        <div class="mb-8">
+            <a href="index.html" class="inline-flex items-center text-emerald-600 hover:text-emerald-800 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                返回首页
+            </a>
+        </div>
+
+        <!-- 论文列表容器 -->
+        <div id="papers-container"></div>
+
+        <!-- 页脚 -->
+        <footer class="text-center mt-12 text-gray-400 text-sm">
+            <p>每日更新神经网络控制 / IEEE论文</p>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        // 指定读取 IEEE 论文数据
+        window.PAPER_DATA_SOURCE = './data/ieee_papers.json';
+    </script>
+</body>
+</html>

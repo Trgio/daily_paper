@@ -1,0 +1,20 @@
+[
+  {
+    "id": "ieee001",
+    "title": "Neural Network Control for Robotic Manipulators",
+    "authors": "Zhang, Y., Li, S., Wang, H.",
+    "abstract": "This paper presents a novel neural network control scheme for robotic manipulators with unknown dynamics.",
+    "ai_summary": "提出机器人机械臂的神经网络控制新方案，解决未知动力学问题。",
+    "url": "https://ieeexplore.ieee.org/document/12345678",
+    "published_date": "2024-01-15"
+  },
+  {
+    "id": "ieee002",
+    "title": "Deep Learning Based Fault Detection in Power Systems",
+    "authors": "Chen, X., Liu, W., Yang, R.",
+    "abstract": "A deep learning approach for detecting faults in power distribution systems is proposed.",
+    "ai_summary": "基于深度学习的电力系统故障检测方法，准确率显著提升。",
+    "url": "https://ieeexplore.ieee.org/document/87654321",
+    "published_date": "2024-02-20"
+  }
+]

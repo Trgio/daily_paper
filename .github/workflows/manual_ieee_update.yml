@@ -1,21 +1,11 @@
-name: Daily AI Paper Update
+name: Manual IEEE Paper Update
 
 on:
-  # 每天北京时间早上 8 点触发
-  schedule:
-    - cron: '0 0 * * *'
-  # 支持手动触发
+  # 仅手动触发
   workflow_dispatch:
-  # 代码推送时触发（可选，用于测试）
-  push:
-    branches:
-      - main
-    paths:
-      - 'scripts/fetch_ai_papers.py'
-      - 'requirements.txt'
 
 jobs:
-  update-ai-papers:
+  update-ieee-papers:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,16 +21,16 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run AI papers fetch script
+      - name: Run IEEE papers fetch script
         env:
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
         run: |
-          python scripts/fetch_ai_papers.py
+          python scripts/fetch_ieee_papers.py
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: 更新AI论文数据"
+          commit_message: "chore: 更新IEEE论文数据"
           commit_author_name: github-actions[bot]
           commit_author_email: github-actions[bot]@users.noreply.github.com
-          file_pattern: "data/ai_papers.json"
+          file_pattern: "data/ieee_papers.json"

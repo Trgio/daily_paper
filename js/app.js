@@ -1,21 +1,54 @@
+// 默认数据源
+const DEFAULT_DATA_SOURCE = './data/papers.json';
+
 // 更新页面日期
-document.getElementById('update-date').textContent = `更新时间: ${new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}`;
+function initPage() {
+    const dateElement = document.getElementById('update-date');
+    if (dateElement) {
+        dateElement.textContent = `更新时间: ${new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}`;
+    }
+}
 
 // 获取论文数据并渲染
 async function loadPapers() {
+    initPage();
+
+    // 优先使用全局指定的数据源，否则使用默认
+    const dataSource = window.PAPER_DATA_SOURCE || DEFAULT_DATA_SOURCE;
+
     try {
-        const response = await fetch('./data/papers.json');
+        const response = await fetch(dataSource);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
         const papers = await response.json();
         renderPapers(papers);
     } catch (error) {
         console.error('加载论文数据失败:', error);
-        document.getElementById('papers-container').innerHTML = '<p class="text-red-500 text-center">加载数据失败，请刷新页面重试。</p>';
+        const container = document.getElementById('papers-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-12">
+                    <p class="text-red-500 mb-4">加载数据失败: ${error.message}</p>
+                    <p class="text-gray-500">请确保数据文件存在或稍后刷新重试</p>
+                </div>
+            `;
+        }
     }
 }
 
 // 渲染论文卡片
 function renderPapers(papers) {
     const container = document.getElementById('papers-container');
+    if (!container) return;
+
+    if (!papers || papers.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center">暂无论文数据</p>';
+        return;
+    }
+
     const papersHTML = papers.map(paper => createPaperCard(paper)).join('');
     container.innerHTML = papersHTML;
 }
