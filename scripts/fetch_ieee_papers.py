@@ -47,16 +47,20 @@ def get_date_range_utc() -> tuple:
 
 
 # ============== Semantic Scholar 抓取（带重试）==============
-def fetch_with_retry(url: str, headers: dict, params: dict, max_retries: int = 3) -> dict:
+def fetch_with_retry(url: str, headers: dict, params: dict, max_retries: int = 6) -> dict:
     """带重试机制的请求"""
     for attempt in range(max_retries):
         try:
-            response = requests.get(url, headers=headers, params=params, timeout=30)
+            # 每次请求间隔，避免过快
+            if attempt > 0:
+                wait_time = 15 * (attempt + 1)  # 递增等待时间，最长90秒
+                print(f"第 {attempt + 1} 次重试，等待 {wait_time} 秒...")
+                time.sleep(wait_time)
+
+            response = requests.get(url, headers=headers, params=params, timeout=60)
 
             if response.status_code == 429:
-                wait_time = 10 * (attempt + 1)  # 递增等待时间
-                print(f"遇到429错误，第 {attempt + 1} 次重试，等待 {wait_time} 秒...")
-                time.sleep(wait_time)
+                print(f"遇到429错误 (HTTP 429)")
                 continue
 
             response.raise_for_status()
