@@ -24,8 +24,9 @@ MINIMAX_API_KEY = os.getenv("MINIMAX_API_KEY")
 MINIMAX_API_URL = "https://api.minimax.chat/v1/text/chatcompletion_v2"
 MODEL_NAME = "abab6.5s-chat"
 
-# Semantic Scholar API
+# Semantic Scholar API（可选，需要申请API Key）
 SEMANTIC_SCHOLAR_API = "https://api.semanticscholar.org/graph/v1/paper/search"
+SEMANTIC_SCHOLAR_API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY", "")
 
 # 浏览器User-Agent
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -33,34 +34,30 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 # ============== 时间工具 ==============
 def get_date_range() -> tuple:
-    """获取过去一周的日期范围"""
+    """获取过去1个月的日期范围"""
     today = datetime.now()
-    start_date = today - timedelta(days=7)
+    start_date = today - timedelta(days=30)
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
 
 
 def get_date_range_utc() -> tuple:
-    """获取过去一周的UTC日期范围"""
+    """获取过去1个月的UTC日期范围"""
     utc_now = datetime.now(timezone.utc)
-    start_date = utc_now - timedelta(days=7)
+    start_date = utc_now - timedelta(days=30)
     return start_date, utc_now
 
 
 # ============== Semantic Scholar 抓取（带重试）==============
-def fetch_with_retry(url: str, headers: dict, params: dict, max_retries: int = 6) -> dict:
+def fetch_with_retry(url: str, headers: dict, params: dict, max_retries: int = 3) -> dict:
     """带重试机制的请求"""
     for attempt in range(max_retries):
         try:
-            # 每次请求间隔，避免过快
-            if attempt > 0:
-                wait_time = 15 * (attempt + 1)  # 递增等待时间，最长90秒
-                print(f"第 {attempt + 1} 次重试，等待 {wait_time} 秒...")
-                time.sleep(wait_time)
-
-            response = requests.get(url, headers=headers, params=params, timeout=60)
+            response = requests.get(url, headers=headers, params=params, timeout=30)
 
             if response.status_code == 429:
-                print(f"遇到429错误 (HTTP 429)")
+                wait_time = 10 * (attempt + 1)  # 递增等待时间
+                print(f"遇到429错误，第 {attempt + 1} 次重试，等待 {wait_time} 秒...")
+                time.sleep(wait_time)
                 continue
 
             response.raise_for_status()
