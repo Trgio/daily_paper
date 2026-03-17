@@ -244,6 +244,17 @@ def fetch_ieee_xplore_papers(query: str, max_results: int = 40) -> list:
                     authors_list = record.get("authors", [])
                     authors = ", ".join([a.get("name", "") for a in authors_list]) if authors_list else "未知作者"
 
+                    # 获取作者单位
+                    author_affiliations = []
+                    for author in authors_list:
+                        aff = author.get("affiliation", "")
+                        if aff:
+                            author_affiliations.append(aff)
+                    author_info = "; ".join(author_affiliations) if author_affiliations else "未知单位"
+
+                    # 获取期刊名称
+                    publication_title = record.get("publicationTitle", "") or record.get("journalName", "") or ""
+
                     # 获取摘要
                     abstract = record.get("abstract", "") or "暂无摘要"
 
@@ -262,7 +273,8 @@ def fetch_ieee_xplore_papers(query: str, max_results: int = 40) -> list:
                         "id": article_id or f"ieee_{len(papers)}",
                         "title": title,
                         "authors": authors,
-                        "author_info": "",
+                        "author_info": author_info,
+                        "publication_title": publication_title,
                         "abstract": abstract,
                         "url": url_link,
                         "published_date": pub_date
@@ -542,6 +554,8 @@ def main():
                 "id": paper["id"],
                 "title": paper["title"],
                 "authors": paper["authors"],
+                "author_info": paper.get("author_info", ""),
+                "publication_title": paper.get("publication_title", ""),
                 "abstract": paper["abstract"],
                 "ai_summary": paper["ai_summary"],
                 "url": paper["url"],

@@ -55,6 +55,24 @@ function renderPapers(papers) {
 
 // 创建单个论文卡片
 function createPaperCard(paper) {
+    // 构建期刊和作者单位信息
+    let metaInfo = '';
+
+    // 添加期刊名称（如果有）
+    if (paper.publication_title) {
+        metaInfo += `<p class="text-purple-600 text-sm mb-1"><strong>期刊:</strong> ${paper.publication_title}</p>`;
+    }
+
+    // 添加作者
+    if (paper.authors) {
+        metaInfo += `<p class="text-gray-600 text-sm mb-1"><strong>作者:</strong> ${paper.authors}</p>`;
+    }
+
+    // 添加作者单位（如果有）
+    if (paper.author_info) {
+        metaInfo += `<p class="text-gray-500 text-sm mb-3"><strong>单位:</strong> ${paper.author_info}</p>`;
+    }
+
     return `
         <article class="bg-white rounded-lg shadow-md mb-8 p-6">
             <h2 class="text-xl font-bold text-gray-800 mb-2">
@@ -62,7 +80,7 @@ function createPaperCard(paper) {
                     ${paper.title}
                 </a>
             </h2>
-            <p class="text-gray-600 text-sm mb-4">${paper.authors}</p>
+            ${metaInfo}
             <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
                 <p class="text-gray-700 font-medium">${paper.ai_summary}</p>
             </div>
