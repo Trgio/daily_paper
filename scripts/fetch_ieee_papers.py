@@ -166,6 +166,124 @@ def fetch_semantic_scholar_papers(query: str, max_results: int = 40) -> list:
     return papers
 
 
+# ============== IEEE Xplore 抓取 ==============
+def fetch_ieee_xplore_papers(query: str, max_results: int = 40) -> list:
+    """从IEEE Xplore抓取近1个月的论文"""
+    print("正在从 IEEE Xplore 抓取论文...")
+
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    headers = {
+        'Accept': 'application/json,text/plain,*/*',
+        'Accept-Encoding': 'gzip,deflate,br',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/json',
+        'Referer': 'https://ieeexplore.ieee.org/search/searchresult.jsp?newsearch=true',
+        'User-Agent': USER_AGENT
+    }
+
+    url = 'https://ieeexplore.ieee.org/rest/search'
+
+    papers = []
+    page = 1
+    while len(papers) < max_results:
+        data = {
+            "newsearch": "true",
+            "queryText": query,
+            "pageNumber": str(page),
+        }
+
+        try:
+            response = requests.post(
+                url=url,
+                data=json.dumps(data),
+                headers=headers,
+                verify=False,
+                timeout=30
+            )
+
+            if response.status_code != 200:
+                print(f"IEEE Xplore 请求失败: HTTP {response.status_code}")
+                break
+
+            result = response.json()
+            total_records = int(result.get("totalRecords", 0))
+
+            if total_records == 0:
+                print("IEEE Xplore 未找到相关论文")
+                break
+
+            records = result.get("records", [])
+            if not records:
+                break
+
+            for record in records:
+                try:
+                    # 提取论文信息
+                    title = record.get("articleTitle", "")
+                    if not title:
+                        continue
+
+                    # 获取作者
+                    authors_list = record.get("authors", [])
+                    authors = ", ".join([a.get("name", "") for a in authors_list]) if authors_list else "未知作者"
+
+                    # 获取摘要
+                    abstract = record.get("abstract", "") or "暂无摘要"
+
+                    # 获取发布日期
+                    pub_date = ""
+                    if record.get("publicationDate"):
+                        pub_date = record.get("publicationDate", "")
+                    elif record.get("year"):
+                        pub_date = str(record.get("year", ""))
+
+                    # 获取URL
+                    article_id = record.get("articleNumber", "")
+                    url_link = f"https://ieeexplore.ieee.org/document/{article_id}" if article_id else ""
+
+                    paper = {
+                        "id": article_id or f"ieee_{len(papers)}",
+                        "title": title,
+                        "authors": authors,
+                        "author_info": "",
+                        "abstract": abstract,
+                        "url": url_link,
+                        "published_date": pub_date
+                    }
+                    papers.append(paper)
+
+                    if len(papers) >= max_results:
+                        break
+
+                except Exception as e:
+                    print(f"解析论文失败: {e}")
+                    continue
+
+            # 检查是否还有更多页面
+            total_pages = int(result.get("totalPages", 1))
+            if page >= total_pages:
+                break
+
+            page += 1
+            time.sleep(1)  # 避免请求过快
+
+        except requests.exceptions.Timeout:
+            print("IEEE Xplore 请求超时")
+            break
+        except requests.exceptions.RequestException as e:
+            print(f"IEEE Xplore 请求错误: {e}")
+            break
+        except Exception as e:
+            print(f"IEEE Xplore 抓取失败: {e}")
+            break
+
+    print(f"从 IEEE Xplore 成功抓取 {len(papers)} 篇论文")
+    return papers
+
+
 # ============== ArXiv 备用抓取 ==============
 def fetch_arxiv_papers_fallback(query: str, max_results: int = 40) -> list:
     """从ArXiv抓取近1个月的论文（备用数据源）"""
@@ -207,16 +325,27 @@ def fetch_arxiv_papers_fallback(query: str, max_results: int = 40) -> list:
 
 # ============== 主抓取函数 ==============
 def fetch_ieee_papers(query: str, max_results: int = 40) -> list:
-    """抓取论文，优先Semantic Scholar，失败则使用ArXiv"""
-    print("\n=== 尝试从 Semantic Scholar 抓取 ===")
+    """抓取论文，优先IEEE Xplore，失败则使用Semantic Scholar，最后ArXiv"""
+    # 优先尝试 IEEE Xplore
+    print("\n=== 尝试从 IEEE Xplore 抓取 ===")
+    papers = fetch_ieee_xplore_papers(query, max_results)
+
+    if len(papers) > 0:
+        print(f"从 IEEE Xplore 成功抓取 {len(papers)} 篇论文")
+        return papers
+
+    # 备用：Semantic Scholar
+    print("\n=== IEEE Xplore 无数据，尝试 Semantic Scholar ===")
     papers = fetch_semantic_scholar_papers(query, max_results)
 
-    if len(papers) == 0:
-        print("\n=== Semantic Scholar 无数据，切换到 ArXiv ===")
-        papers = fetch_arxiv_papers_fallback(query, max_results)
-        print(f"从 ArXiv 成功抓取 {len(papers)} 篇论文")
-    else:
+    if len(papers) > 0:
         print(f"从 Semantic Scholar 成功抓取 {len(papers)} 篇论文")
+        return papers
+
+    # 最终备用：ArXiv
+    print("\n=== Semantic Scholar 无数据，切换到 ArXiv ===")
+    papers = fetch_arxiv_papers_fallback(query, max_results)
+    print(f"从 ArXiv 成功抓取 {len(papers)} 篇论文")
 
     return papers
 

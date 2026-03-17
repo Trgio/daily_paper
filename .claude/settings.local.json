@@ -3,7 +3,8 @@
     "allow": [
       "Bash(cd:*)",
       "Bash(curl:*)",
-      "Bash(start:*)"
+      "Bash(start:*)",
+      "Bash(python scripts/diagnose.py)"
     ]
   }
 }
