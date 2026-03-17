@@ -1,18 +1,47 @@
 [
   {
-    "title": "Attention Is All You Need",
-    "authors": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, Illia Polosukhin",
-    "abstract": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. The best performing models also connect the encoder and the decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely.",
-    "ai_summary": "Transformer架构通过自注意力机制替代传统RNN/CNN，在机器翻译任务上取得了SOTA效果。",
-    "url": "https://arxiv.org/abs/1706.03762",
-    "published_date": "2017-06-12"
+    "id": "2603.15620v1",
+    "title": "Towards Generalizable Robotic Manipulation in Dynamic Environments",
+    "authors": "Heng Fang, Shangru Li, Shuhan Wang, Xuanyang Xi, Dingkang Liang, Xiang Bai",
+    "abstract": "Vision-Language-Action (VLA) models excel in static manipulation but struggle in dynamic environments with moving targets. This performance gap primarily stems from a scarcity of dynamic manipulation datasets and the reliance of mainstream VLAs on single-frame observations, restricting their spatiotemporal reasoning capabilities. To address this, we introduce DOMINO, a large-scale dataset and benchmark for generalizable dynamic manipulation, featuring 35 tasks with hierarchical complexities, over 110K expert trajectories, and a multi-dimensional evaluation suite. Through comprehensive experiments, we systematically evaluate existing VLAs on dynamic tasks, explore effective training strategies for dynamic awareness, and validate the generalizability of dynamic data. Furthermore, we propose PUMA, a dynamics-aware VLA architecture. By integrating scene-centric historical optical flow and specialized world queries to implicitly forecast object-centric future states, PUMA couples history-aware perception with short-horizon prediction. Results demonstrate that PUMA achieves state-of-the-art performance, yielding a 6.3% absolute improvement in success rate over baselines. Moreover, we show that training on dynamic data fosters robust spatiotemporal representations that transfer to static tasks. All code and data are available at https://github.com/H-EmbodVis/DOMINO.",
+    "ai_summary": "该论文提出了一种新的动态环境下的机器人操作方法，通过引入DOMINO数据集和PUMA架构，显著提高了机器人在动态环境中的操作性能和泛化能力。",
+    "url": "http://arxiv.org/abs/2603.15620v1",
+    "published_date": "2026-03-16"
   },
   {
-    "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
-    "authors": "Jacob Devlin, Ming-Wei Chang, Kenton Lee, Kristina Toutanova",
-    "abstract": "We introduce a new language representation model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language representation models, BERT is designed to pre-train deep bidirectional representations by jointly conditioning on both left and right context in all layers. As a result, BERT can be fine-tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks.",
-    "ai_summary": "BERT通过双向预训练机制，在多项NLP基准测试中刷新了记录。",
-    "url": "https://arxiv.org/abs/1810.04805",
-    "published_date": "2018-10-11"
+    "id": "2603.15558v1",
+    "title": "Panoramic Affordance Prediction",
+    "authors": "Zixin Zhang, Chenfei Liao, Hongfei Zhang, Harold Haodong Chen, Kanghao Chen, Zichen Wen, Litao Guo, Bin Ren, Xu Zheng, Yinchuan Li, Xuming Hu, Nicu Sebe, Ying-Cong Chen",
+    "abstract": "Affordance prediction serves as a critical bridge between perception and action in embodied AI. However, existing research is confined to pinhole camera models, which suffer from narrow Fields of View (FoV) and fragmented observations, often missing critical holistic environmental context. In this paper, we present the first exploration into Panoramic Affordance Prediction, utilizing 360-degree imagery to capture global spatial relationships and holistic scene understanding. To facilitate this novel task, we first introduce PAP-12K, a large-scale benchmark dataset containing over 1,000 ultra-high-resolution (12k, 11904 x 5952) panoramic images with over 12k carefully annotated QA pairs and affordance masks. Furthermore, we propose PAP, a training-free, coarse-to-fine pipeline inspired by the human foveal visual system to tackle the ultra-high resolution and severe distortion inherent in panoramic images. PAP employs recursive visual routing via grid prompting to progressively locate targets, applies an adaptive gaze mechanism to rectify local geometric distortions, and utilizes a cascaded grounding pipeline to extract precise instance-level masks. Experimental results on PAP-12K reveal that existing affordance prediction methods designed for standard perspective images suffer severe performance degradation and fail due to the unique challenges of panoramic vision. In contrast, PAP framework effectively overcomes these obstacles, significantly outperforming state-of-the-art baselines and highlighting the immense potential of panoramic perception for robust embodied intelligence.",
+    "ai_summary": "本文首次探索全景式感知预测，提出了一种新颖的训练自由、从粗到细的全景感知预测管道PAP，通过引入大规模全景图像数据集PAP-12K，有效解决了传统方法在全景视觉上的性能退化问题，显著提升了实体智能的鲁棒性。",
+    "url": "http://arxiv.org/abs/2603.15558v1",
+    "published_date": "2026-03-16"
+  },
+  {
+    "id": "2603.15525v1",
+    "title": "Clinically Aware Synthetic Image Generation for Concept Coverage in Chest X-ray Models",
+    "authors": "Amy Rafferty, Rishi Ramaesh, Ajitha Rajan",
+    "abstract": "The clinical deployment of AI diagnostic models demands more than benchmark accuracy - it demands robustness across the full spectrum of disease presentations. However, publicly available chest radiographic datasets systematically underrepresent critical clinical feature combinations, leaving models under-trained precisely where clinical stakes are highest. We present CARS, a clinically aware and anatomically grounded framework that addresses this gap through principled synthetic image generation. CARS applies targeted perturbations to clinical feature vectors, enabling controlled insertion and deletion of pathological findings while explicitly preserving anatomical structure. We evaluate CARS across seven backbone architectures by fine-tuning models on synthetic subsets and testing on a held-out MIMIC-CXR benchmark. Compared to prior feature perturbation approaches, fine-tuning on CARS-generated images consistently improves precision-recall performance, reduces predictive uncertainty, and improves model calibration. Structural and semantic analyses demonstrate high anatomical fidelity, strong feature alignment, and low semantic uncertainty. Independent evaluation by two expert radiologists further confirms realism and clinical agreement. As the field moves toward regulated clinical AI, CARS demonstrates that anatomically faithful synthetic data generation for better feature space coverage is a viable and effective strategy for improving both the performance and trustworthiness of chest X-ray classification systems - without compromising clinical integrity.",
+    "ai_summary": "该论文提出了一种名为CARS的框架，通过有针对性的临床特征向量扰动来生成合成图像，以改善胸部X光图像分类模型的临床表现和鲁棒性，有效提高了模型的精确度-召回率性能，减少了预测不确定性，并增强了模型校准。",
+    "url": "http://arxiv.org/abs/2603.15525v1",
+    "published_date": "2026-03-16"
+  },
+  {
+    "id": "2603.15618v1",
+    "title": "Look Before Acting: Enhancing Vision Foundation Representations for Vision-Language-Action Models",
+    "authors": "Yulin Luo, Hao Chen, Zhuangzhe Wu, Bowen Sui, Jiaming Liu, Chenyang Gu, Zhuoyang Liu, Qiuxuan Feng, Jiale Yu, Shuo Gu, Peng Jia, Pheng-Ann Heng, Shanghang Zhang",
+    "abstract": "Vision-Language-Action (VLA) models have recently emerged as a promising paradigm for robotic manipulation, in which reliable action prediction critically depends on accurately interpreting and integrating visual observations conditioned on language instructions. Although recent works have sought to enhance the visual capabilities of VLA models, most approaches treat the LLM backbone as a black box, providing limited insight into how visual information is grounded into action generation. Therefore, we perform a systematic analysis of multiple VLA models across different action-generation paradigms and observe that sensitivity to visual tokens progressively decreases in deeper layers during action generation. Motivated by this observation, we propose \\textbf{DeepVision-VLA}, built on a \\textbf{Vision-Language Mixture-of-Transformers (VL-MoT)} framework. This framework enables shared attention between the vision foundation model and the VLA backbone, injecting multi-level visual features from the vision expert into deeper layers of the VLA backbone to enhance visual representations for precise and complex manipulation. In addition, we introduce \\textbf{Action-Guided Visual Pruning (AGVP)}, which leverages shallow-layer attention to prune irrelevant visual tokens while preserving task-relevant ones, reinforcing critical visual cues for manipulation with minimal computational overhead. DeepVision-VLA outperforms prior state-of-the-art methods by 9.0\\% and 7.5\\% on simulated and real-world tasks, respectively, providing new insights for the design of visually enhanced VLA models.",
+    "ai_summary": "该论文提出了一种名为DeepVision-VLA的视觉-语言-动作模型，通过Vision-Language Mixture-of-Transformers框架和Action-Guided Visual Pruning技术，显著提升了模型在模拟和真实世界任务中的表现，为视觉增强型VLA模型的设计提供了新的见解。",
+    "url": "http://arxiv.org/abs/2603.15618v1",
+    "published_date": "2026-03-16"
+  },
+  {
+    "id": "2603.15607v1",
+    "title": "Do Metrics for Counterfactual Explanations Align with User Perception?",
+    "authors": "Felix Liedeker, Basil Ell, Philipp Cimiano, Christoph Düsing",
+    "abstract": "Explainability is widely regarded as essential for trustworthy artificial intelligence systems. However, the metrics commonly used to evaluate counterfactual explanations are algorithmic evaluation metrics that are rarely validated against human judgments of explanation quality. This raises the question of whether such metrics meaningfully reflect user perceptions. We address this question through an empirical study that directly compares algorithmic evaluation metrics with human judgments across three datasets. Participants rated counterfactual explanations along multiple dimensions of perceived quality, which we relate to a comprehensive set of standard counterfactual metrics. We analyze both individual relationships and the extent to which combinations of metrics can predict human assessments. Our results show that correlations between algorithmic metrics and human ratings are generally weak and strongly dataset-dependent. Moreover, increasing the number of metrics used in predictive models does not lead to reliable improvements, indicating structural limitations in how current metrics capture criteria relevant for humans. Overall, our findings suggest that widely used counterfactual evaluation metrics fail to reflect key aspects of explanation quality as perceived by users, underscoring the need for more human-centered approaches to evaluating explainable artificial intelligence.",
+    "ai_summary": "该论文通过实证研究发现，常用的反事实解释评估指标与人类对解释质量的感知之间关联性弱，且这种关联性在不同数据集上表现出强烈的依赖性，表明现有指标在捕捉人类相关标准方面存在结构限制，强调了需要更多以人类为中心的方法来评估可解释的人工智能。",
+    "url": "http://arxiv.org/abs/2603.15607v1",
+    "published_date": "2026-03-16"
   }
 ]
