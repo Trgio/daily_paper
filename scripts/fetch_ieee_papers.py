@@ -208,16 +208,30 @@ def call_minimax_api(title: str, abstract: str, author_info: str = "") -> dict:
         json_match = re.search(r'\{.+\}', content_clean, re.DOTALL)
         if json_match:
             try:
-                return json.loads(json_match.group())
+                parsed = json.loads(json_match.group())
+                # 确保 score 转换为数值类型
+                try:
+                    score = float(parsed.get("score", 50))
+                except (ValueError, TypeError):
+                    score = 0.0
+                # 确保 summary 有默认值
+                summary = parsed.get("summary") or "无总结"
+                return {"score": score, "summary": summary}
             except json.JSONDecodeError:
                 # 如果正则提取的仍然解析失败，尝试更严格的匹配
                 json_match_strict = re.search(r'\{"score":\s*\d+,\s*"summary":\s*".*"\}', content_clean)
                 if json_match_strict:
-                    return json.loads(json_match_strict.group())
+                    parsed = json.loads(json_match_strict.group())
+                    try:
+                        score = float(parsed.get("score", 50))
+                    except (ValueError, TypeError):
+                        score = 0.0
+                    summary = parsed.get("summary") or "无总结"
+                    return {"score": score, "summary": summary}
 
         # 最终降级方案：返回默认评分
         print("警告: 无法解析API返回的JSON，使用默认评分")
-        return {"score": 50, "summary": "JSON解析失败，使用默认评分"}
+        return {"score": 0.0, "summary": "无总结"}
 
     except requests.exceptions.Timeout:
         print("错误: API请求超时")
@@ -280,7 +294,7 @@ def main():
         scored_papers = score_papers(papers)
 
         # 3. 排序并筛选Top N
-        scored_papers.sort(key=lambda x: x["ai_score"], reverse=True)
+        scored_papers.sort(key=lambda x: float(x.get("ai_score", 0)) if str(x.get("ai_score", "")).replace(".", "", 1).isdigit() else 0, reverse=True)
         top_papers = scored_papers[:TOP_N]
 
         # 4. 写入JSON文件
