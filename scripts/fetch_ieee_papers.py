@@ -33,16 +33,16 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 # ============== 时间工具 ==============
 def get_date_range() -> tuple:
-    """获取过去1个月的日期范围"""
+    """获取过去一周的日期范围"""
     today = datetime.now()
-    start_date = today - timedelta(days=30)
+    start_date = today - timedelta(days=7)
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
 
 
 def get_date_range_utc() -> tuple:
-    """获取过去1个月的UTC日期范围"""
+    """获取过去一周的UTC日期范围"""
     utc_now = datetime.now(timezone.utc)
-    start_date = utc_now - timedelta(days=30)
+    start_date = utc_now - timedelta(days=7)
     return start_date, utc_now
 
 
