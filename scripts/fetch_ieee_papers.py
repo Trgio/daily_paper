@@ -239,7 +239,9 @@ def score_papers(papers: list) -> list:
     scored_papers = []
 
     for i, paper in enumerate(papers):
-        print(f"正在评分第 {i+1}/{len(papers)} 篇论文: {paper['title'][:50]}...")
+        title = paper.get('title', '未知标题')
+        print(f"正在评分第 {i+1}/{len(papers)} 篇论文: {title[:50]}...")
+        print(f"当前处理到: {title}")
 
         ai_result = call_minimax_api(
             paper["title"],
