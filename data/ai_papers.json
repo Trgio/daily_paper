@@ -1,20 +1,47 @@
 [
   {
-    "id": "2312.12345",
-    "title": "Attention Is All You Need",
-    "authors": "Vaswani, A., Shazeer, N., Parmar, N., et al.",
-    "abstract": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. The best performing models also connect the encoder and decoder through an attention mechanism.",
-    "ai_summary": "Transformer架构奠基之作，提出自注意力机制，奠定了现代NLP的基础。",
-    "url": "https://arxiv.org/abs/1706.03762",
-    "published_date": "2017-06-12"
+    "id": "2603.15603v1",
+    "title": "Fast SAM 3D Body: Accelerating SAM 3D Body for Real-Time Full-Body Human Mesh Recovery",
+    "authors": "Timing Yang, Sicheng He, Hongyi Jing, Jiawei Yang, Zhijian Liu, Chuhang Zou, Yue Wang",
+    "abstract": "SAM 3D Body (3DB) achieves state-of-the-art accuracy in monocular 3D human mesh recovery, yet its inference latency of several seconds per image precludes real-time application. We present Fast SAM 3D Body, a training-free acceleration framework that reformulates the 3DB inference pathway to achieve interactive rates. By decoupling serial spatial dependencies and applying architecture-aware pruning, we enable parallelized multi-crop feature extraction and streamlined transformer decoding. Moreover, to extract the joint-level kinematics (SMPL) compatible with existing humanoid control and policy learning frameworks, we replace the iterative mesh fitting with a direct feedforward mapping, accelerating this specific conversion by over 10,000x. Overall, our framework delivers up to a 10.9x end-to-end speedup while maintaining on-par reconstruction fidelity, even surpassing 3DB on benchmarks such as LSPET. We demonstrate its utility by deploying Fast SAM 3D Body in a vision-only teleoperation system that-unlike methods reliant on wearable IMUs-enables real-time humanoid control and the direct collection of manipulation policies from a single RGB stream.",
+    "ai_summary": "该论文提出了一种名为Fast SAM 3D Body的加速框架，无需训练即可将现有的单目3D人体网格恢复方法SAM 3D Body加速至实时交互速率，同时保持了与原方法相当的重建精度，并在某些基准测试中超越了原方法。",
+    "url": "http://arxiv.org/abs/2603.15603v1",
+    "published_date": "2026-03-16"
   },
   {
-    "id": "1810.04805",
-    "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
-    "authors": "Devlin, J., Chang, M., Lee, K., Toutanova, K.",
-    "abstract": "We introduce a new language representation model called BERT, which stands for Bidirectional Encoder Representations from Transformers.",
-    "ai_summary": "BERT模型开创性地使用双向预训练，在多项NLP任务取得SOTA结果。",
-    "url": "https://arxiv.org/abs/1810.04805",
-    "published_date": "2018-10-11"
+    "id": "2603.15596v1",
+    "title": "Robust and Computationally Efficient Linear Contextual Bandits under Adversarial Corruption and Heavy-Tailed Noise",
+    "authors": "Naoto Tani, Futoshi Futami",
+    "abstract": "We study linear contextual bandits under adversarial corruption and heavy-tailed noise with finite $(1+ε)$-th moments for some $ε\\in (0,1]$. Existing work that addresses both adversarial corruption and heavy-tailed noise relies on a finite variance (i.e., finite second-moment) assumption and suffers from computational inefficiency. We propose a computationally efficient algorithm based on online mirror descent that achieves robustness to both adversarial corruption and heavy-tailed noise. While the existing algorithm incurs $\\mathcal{O}(t\\log T)$ computational cost, our algorithm reduces this to $\\mathcal{O}(1)$ per round. We establish an additive regret bound consisting of a term depending on the $(1+ε)$-moment bound of the noise and a term depending on the total amount of corruption. In particular, when $ε= 1$, our result recovers existing guarantees under finite-variance assumptions. When no corruption is present, it matches the best-known rates for linear contextual bandits with heavy-tailed noise. Moreover, the algorithm requires no prior knowledge of the noise moment bound or the total amount of corruption and still guarantees sublinear regret.",
+    "ai_summary": "该论文提出了一种针对对抗性干扰和重尾噪声下的线性上下文带状问题的计算高效算法，并在有限$(1+ε)$-阶矩条件下证明了其鲁棒性和次线性遗憾界限。",
+    "url": "http://arxiv.org/abs/2603.15596v1",
+    "published_date": "2026-03-16"
+  },
+  {
+    "id": "2603.15594v1",
+    "title": "OpenSeeker: Democratizing Frontier Search Agents by Fully Open-Sourcing Training Data",
+    "authors": "Yuwen Du, Rui Ye, Shuo Tang, Xinyu Zhu, Yijun Lu, Yuzhu Cai, Siheng Chen",
+    "abstract": "Deep search capabilities have become an indispensable competency for frontier Large Language Model (LLM) agents, yet the development of high-performance search agents remains dominated by industrial giants due to a lack of transparent, high-quality training data. This persistent data scarcity has fundamentally hindered the progress of the broader research community in developing and innovating within this domain. To bridge this gap, we introduce OpenSeeker, the first fully open-source search agent (i.e., model and data) that achieves frontier-level performance through two core technical innovations: (1) Fact-grounded scalable controllable QA synthesis, which reverse-engineers the web graph via topological expansion and entity obfuscation to generate complex, multi-hop reasoning tasks with controllable coverage and complexity. (2) Denoised trajectory synthesis, which employs a retrospective summarization mechanism to denoise the trajectory, therefore promoting the teacher LLMs to generate high-quality actions. Experimental results demonstrate that OpenSeeker, trained (a single training run) on only 11.7k synthesized samples, achieves state-of-the-art performance across multiple benchmarks including BrowseComp, BrowseComp-ZH, xbench-DeepSearch, and WideSearch. Notably, trained with simple SFT, OpenSeeker significantly outperforms the second-best fully open-source agent DeepDive (e.g., 29.5% v.s. 15.3% on BrowseComp), and even surpasses industrial competitors such as Tongyi DeepResearch (trained via extensive continual pre-training, SFT, and RL) on BrowseComp-ZH (48.4% v.s. 46.7%). We fully open-source the complete training dataset and the model weights to democratize frontier search agent research and foster a more transparent, collaborative ecosystem.",
+    "ai_summary": "该论文提出了一种名为OpenSeeker的开源搜索代理，通过两项核心技术创新实现了前沿水平的性能，并通过完全开源训练数据和模型权重，旨在促进研究社区的透明度和协作，推动搜索代理领域的研究和创新。",
+    "url": "http://arxiv.org/abs/2603.15594v1",
+    "published_date": "2026-03-16"
+  },
+  {
+    "id": "2603.15563v1",
+    "title": "The PokeAgent Challenge: Competitive and Long-Context Learning at Scale",
+    "authors": "Seth Karten, Jake Grigsby, Tersoo Upaa, Junik Bae, Seonghun Hong, Hyunyoung Jeong, Jaeyoon Jung, Kun Kerdthaisong, Gyungbo Kim, Hyeokgi Kim, Yujin Kim, Eunju Kwon, Dongyu Liu, Patrick Mariglia, Sangyeon Park, Benedikt Schink, Xianwei Shi, Anthony Sistilli, Joseph Twin, Arian Urdu, Matin Urdu, Qiao Wang, Ling Wu, Wenli Zhang, Kunsheng Zhou, Stephanie Milani, Kiran Vodrahalli, Amy Zhang, Fei Fang, Yuke Zhu, Chi Jin",
+    "abstract": "We present the PokeAgent Challenge, a large-scale benchmark for decision-making research built on Pokemon's multi-agent battle system and expansive role-playing game (RPG) environment. Partial observability, game-theoretic reasoning, and long-horizon planning remain open problems for frontier AI, yet few benchmarks stress all three simultaneously under realistic conditions. PokeAgent targets these limitations at scale through two complementary tracks: our Battling Track, which calls for strategic reasoning and generalization under partial observability in competitive Pokemon battles, and our Speedrunning Track, which requires long-horizon planning and sequential decision-making in the Pokemon RPG. Our Battling Track supplies a dataset of 20M+ battle trajectories alongside a suite of heuristic, RL, and LLM-based baselines capable of high-level competitive play. Our Speedrunning Track provides the first standardized evaluation framework for RPG speedrunning, including an open-source multi-agent orchestration system for modular, reproducible comparisons of harness-based LLM approaches. Our NeurIPS 2025 competition validates both the quality of our resources and the research community's interest in Pokemon, with over 100 teams competing across both tracks and winning solutions detailed in our paper. Participant submissions and our baselines reveal considerable gaps between generalist (LLM), specialist (RL), and elite human performance. Analysis against the BenchPress evaluation matrix shows that Pokemon battling is nearly orthogonal to standard LLM benchmarks, measuring capabilities not captured by existing suites and positioning Pokemon as an unsolved benchmark that can drive RL and LLM research forward. We transition to a living benchmark with a live leaderboard for Battling and self-contained evaluation for Speedrunning at https://pokeagentchallenge.com.",
+    "ai_summary": "该论文提出了一项大规模的决策制定研究基准——PokeAgent挑战，基于宝可梦的多智能体战斗系统和角色扮演游戏环境，旨在同时解决部分可观测性、博弈论推理和长视野规划等前沿AI问题。",
+    "url": "http://arxiv.org/abs/2603.15563v1",
+    "published_date": "2026-03-16"
+  },
+  {
+    "id": "2603.15558v1",
+    "title": "Panoramic Affordance Prediction",
+    "authors": "Zixin Zhang, Chenfei Liao, Hongfei Zhang, Harold Haodong Chen, Kanghao Chen, Zichen Wen, Litao Guo, Bin Ren, Xu Zheng, Yinchuan Li, Xuming Hu, Nicu Sebe, Ying-Cong Chen",
+    "abstract": "Affordance prediction serves as a critical bridge between perception and action in embodied AI. However, existing research is confined to pinhole camera models, which suffer from narrow Fields of View (FoV) and fragmented observations, often missing critical holistic environmental context. In this paper, we present the first exploration into Panoramic Affordance Prediction, utilizing 360-degree imagery to capture global spatial relationships and holistic scene understanding. To facilitate this novel task, we first introduce PAP-12K, a large-scale benchmark dataset containing over 1,000 ultra-high-resolution (12k, 11904 x 5952) panoramic images with over 12k carefully annotated QA pairs and affordance masks. Furthermore, we propose PAP, a training-free, coarse-to-fine pipeline inspired by the human foveal visual system to tackle the ultra-high resolution and severe distortion inherent in panoramic images. PAP employs recursive visual routing via grid prompting to progressively locate targets, applies an adaptive gaze mechanism to rectify local geometric distortions, and utilizes a cascaded grounding pipeline to extract precise instance-level masks. Experimental results on PAP-12K reveal that existing affordance prediction methods designed for standard perspective images suffer severe performance degradation and fail due to the unique challenges of panoramic vision. In contrast, PAP framework effectively overcomes these obstacles, significantly outperforming state-of-the-art baselines and highlighting the immense potential of panoramic perception for robust embodied intelligence.",
+    "ai_summary": "该论文首次探索了全景式感知预测，提出了一种新颖的训练自由、从粗到细的管道PAP，并创建了大规模的全景感知预测基准数据集PAP-12K，显著提升了全景视觉下的感知预测性能，为实体AI的鲁棒性提供了巨大潜力。",
+    "url": "http://arxiv.org/abs/2603.15558v1",
+    "published_date": "2026-03-16"
   }
 ]
