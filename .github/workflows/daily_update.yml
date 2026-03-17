@@ -1,0 +1,46 @@
+name: Daily Paper Update
+
+on:
+  # 每天北京时间早上 8 点触发
+  schedule:
+    - cron: '0 0 * * *'
+  # 支持手动触发
+  workflow_dispatch:
+  # 代码推送时触发（可选，用于测试）
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/**'
+      - 'requirements.txt'
+
+jobs:
+  update-papers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run fetch papers script
+        env:
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+        run: |
+          python scripts/fetch_papers.py
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: 更新每日论文数据"
+          commit_author_name: github-actions[bot]
+          commit_author_email: github-actions[bot]@users.noreply.github.com
+          file_pattern: "data/papers.json"
